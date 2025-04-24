@@ -1,9 +1,11 @@
-version: '3'
+version: '3.7'
+
 services:
   demo-app:
-    build: .
+    image: itsraghav/demo-app:latest  
     ports:
       - "3000:3000"
     deploy:
       replicas: 2
-
+      restart_policy:
+        condition: on-failure
