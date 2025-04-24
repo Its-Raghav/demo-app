@@ -7,7 +7,13 @@ pipeline {
     }
 
     stages {
-        stage('Build Image') {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'master', url: 'https://github.com/Its-Raghav/demo-app.git'
+            }
+        }
+
+        stage('Build Docker Image') {
             steps {
                 script {
                     docker.build("${IMAGE}")
@@ -15,7 +21,7 @@ pipeline {
             }
         }
 
-        stage('Push to DockerHub') {
+        stage('Push to Docker Hub') {
             steps {
                 script {
                     docker.withRegistry('', REGISTRY_CREDENTIAL) {
@@ -25,11 +31,14 @@ pipeline {
             }
         }
 
-        stage('Deploy Container') {
+        stage('Deploy with Docker Compose') {
             steps {
-                sh 'docker rm -f demo-app || true'
-                sh 'docker run -d -p 3000:3000 --name demo-app ${IMAGE}'
+                sh '''
+                    docker stack rm demo-stack || true
+                    sleep 5
+                    docker stack deploy -c docker-compose.yml demo-stack
+                '''
             }
         }
     }
-}
+
